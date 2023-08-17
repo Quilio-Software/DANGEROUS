@@ -11,39 +11,64 @@
 #ifndef PLUGINEDITOR_H_INCLUDED
 #define PLUGINEDITOR_H_INCLUDED
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+using namespace juce;
 
 //==============================================================================
 /**
 */
-class SafeequaliserAudioProcessorEditor  : public SAFEAudioProcessorEditor,
-                                           public FilterGraph::Listener
+class SafeequaliserAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    SafeequaliserAudioProcessorEditor (SafeequaliserAudioProcessor* ownerFilter);
+    SafeequaliserAudioProcessorEditor (SafeequaliserAudioProcessor& ownerFilter);
     ~SafeequaliserAudioProcessorEditor();
 
     //==============================================================================
     // This is just a standard Juce paint method...
-    void paint (Graphics& g);
     
     void sliderUpdate (Slider* slider);
     
     void updateUI();
     
     void filterControlChanged (int controlNum);
-    
+
+    //==============================================================================
+    void paint (juce::Graphics&) override;
+    void resized() override;
+
+    // This reference is provided as a quick way for your editor to
+    // access the processor object that created it.
+    SafeequaliserAudioProcessor& audioProcessor;
+
 private:
+    // Sliders for the first band
+    juce::Slider gain0Slider;
+    juce::Slider freq0Slider;
+
+    // Sliders for the second band
+    juce::Slider gain1Slider;
+    juce::Slider freq1Slider;
+    juce::Slider qFactor1Slider;
+
+    // Sliders for the third band
+    juce::Slider gain2Slider;
+    juce::Slider freq2Slider;
+    juce::Slider qFactor2Slider;
+
+    // Sliders for the fourth band
+    juce::Slider gain3Slider;
+    juce::Slider freq3Slider;
+    juce::Slider qFactor3Slider;
+
+    // Sliders for the fifth band
+    juce::Slider gain4Slider;
+    juce::Slider freq4Slider;
+
     Image backgroundImage;
     
-    FilterGraph display;
-    
-    SafeequaliserAudioProcessor* getProcessor()
-    {
-        return static_cast <SafeequaliserAudioProcessor*> (getAudioProcessor());
-    }
+//    FilterGraph display;
 };
 
 

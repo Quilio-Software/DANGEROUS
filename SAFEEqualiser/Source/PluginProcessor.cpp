@@ -14,6 +14,16 @@
 
 //==============================================================================
 SafeequaliserAudioProcessor::SafeequaliserAudioProcessor()
+#ifndef JucePlugin_PreferredChannelConfigurations
+     : AudioProcessor (BusesProperties()
+                     #if ! JucePlugin_IsMidiEffect
+                      #if ! JucePlugin_IsSynth
+                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                      #endif
+                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+                     #endif
+                       )
+#endif
 {
     numFilters = 5;
     gains.allocate (numFilters, true);
@@ -23,25 +33,25 @@ SafeequaliserAudioProcessor::SafeequaliserAudioProcessor()
     float frequencySkewFactor = 0.25;
     float qSkewFactor = 0.5;
     
-    addDBParameter ("Band 1 Gain", gains [0], 0.0f, -12.0f, 12.0f, "dB");
-    addParameter ("Band 1 Frequency", freqs [0], 150.0f, 22.0f, 1000.0f, "Hz", frequencySkewFactor);
-    qFactors [0] = 0.71f;
-    
-    addDBParameter ("Band 2 Gain", gains [1], 0.0f, -12.0f, 12.0f, "dB");
-    addParameter ("Band 2 Frequency", freqs [1], 560.0f, 82.0f, 3900.0f, "Hz", frequencySkewFactor);
-    addParameter ("Band 2 Q Factor", qFactors [1], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);
-    
-    addDBParameter ("Band 3 Gain", gains [2], 0.0f, -12.0f, 12.0f, "dB");
-    addParameter ("Band 3 Frequency", freqs [2], 1000.0f, 180.0f, 4700.0f, "Hz", frequencySkewFactor);
-    addParameter ("Band 3 Q Factor", qFactors [2], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);    
-    
-    addDBParameter ("Band 4 Gain", gains [3], 0.0f, -12.0f, 12.0f, "dB");
-    addParameter ("Band 4 Frequency", freqs [3], 3300.0f, 220.0f, 10000.0f, "Hz", frequencySkewFactor);
-    addParameter ("Band 4 Q Factor", qFactors [3], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);
-    
-    addDBParameter ("Band 5 Gain", gains [4], 0.0f, -12.0f, 12.0f, "dB");
-    addParameter ("Band 5 Frequency", freqs [4], 8200.0f, 580.0f, 20000.0f, "Hz", frequencySkewFactor);
-    qFactors [4] = 0.71f;
+    //addDBParameter ("Band 1 Gain", gains [0], 0.0f, -12.0f, 12.0f, "dB");
+    //addParameter ("Band 1 Frequency", freqs [0], 150.0f, 22.0f, 1000.0f, "Hz", frequencySkewFactor);
+    //qFactors [0] = 0.71f;
+    //
+    //addDBParameter ("Band 2 Gain", gains [1], 0.0f, -12.0f, 12.0f, "dB");
+    //addParameter ("Band 2 Frequency", freqs [1], 560.0f, 82.0f, 3900.0f, "Hz", frequencySkewFactor);
+    //addParameter ("Band 2 Q Factor", qFactors [1], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);
+    //
+    //addDBParameter ("Band 3 Gain", gains [2], 0.0f, -12.0f, 12.0f, "dB");
+    //addParameter ("Band 3 Frequency", freqs [2], 1000.0f, 180.0f, 4700.0f, "Hz", frequencySkewFactor);
+    //addParameter ("Band 3 Q Factor", qFactors [2], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);    
+    //
+    //addDBParameter ("Band 4 Gain", gains [3], 0.0f, -12.0f, 12.0f, "dB");
+    //addParameter ("Band 4 Frequency", freqs [3], 3300.0f, 220.0f, 10000.0f, "Hz", frequencySkewFactor);
+    //addParameter ("Band 4 Q Factor", qFactors [3], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);
+    //
+    //addDBParameter ("Band 5 Gain", gains [4], 0.0f, -12.0f, 12.0f, "dB");
+    //addParameter ("Band 5 Frequency", freqs [4], 8200.0f, 580.0f, 20000.0f, "Hz", frequencySkewFactor);
+    //qFactors [4] = 0.71f;
         
     fs = 44100;
     
@@ -53,29 +63,68 @@ SafeequaliserAudioProcessor::~SafeequaliserAudioProcessor()
 }
 
 //==============================================================================
-void SafeequaliserAudioProcessor::parameterUpdateCalculations (int index)
-{     
-    if (index == PARAMgain0 || index == PARAMfreq0)
-    {
-        updateFilters (0);
-    }
-    else if (index == PARAMgain1 || index == PARAMfreq1 || index == PARAMqFactor1)
-    {
-        updateFilters (1);
-    }
-    else if (index == PARAMgain2 || index == PARAMfreq2 || index == PARAMqFactor2)
-    {
-        updateFilters (2);
-    }
-    else if (index == PARAMgain3 || index == PARAMfreq3 || index == PARAMqFactor3)
-    {
-        updateFilters (3);
-    }
-    else if (index == PARAMgain4 || index == PARAMfreq4)
-    {
-        updateFilters (4);
-    }
+const juce::String SafeequaliserAudioProcessor::getName() const
+{
+    return JucePlugin_Name;
 }
+
+bool SafeequaliserAudioProcessor::acceptsMidi() const
+{
+   #if JucePlugin_WantsMidiInput
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+bool SafeequaliserAudioProcessor::producesMidi() const
+{
+   #if JucePlugin_ProducesMidiOutput
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+bool SafeequaliserAudioProcessor::isMidiEffect() const
+{
+   #if JucePlugin_IsMidiEffect
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+double SafeequaliserAudioProcessor::getTailLengthSeconds() const
+{
+    return 0.0;
+}
+
+int SafeequaliserAudioProcessor::getNumPrograms()
+{
+    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+                // so this should be at least 1, even if you're not really implementing programs.
+}
+
+int SafeequaliserAudioProcessor::getCurrentProgram()
+{
+    return 0;
+}
+
+void SafeequaliserAudioProcessor::setCurrentProgram (int index)
+{
+}
+
+const juce::String SafeequaliserAudioProcessor::getProgramName (int index)
+{
+    return {};
+}
+
+void SafeequaliserAudioProcessor::changeProgramName (int index, const juce::String& newName)
+{
+}
+
+//==============================================================================
 
 void SafeequaliserAudioProcessor::updateFilters (int band)
 {     
@@ -110,7 +159,12 @@ void SafeequaliserAudioProcessor::updateFilters (int band)
 }
 
 //==============================================================================
-void SafeequaliserAudioProcessor::pluginPreparation (double sampleRate, int samplesPerBlock)
+
+void SafeequaliserAudioProcessor::releaseResources()
+{
+}
+
+void SafeequaliserAudioProcessor::prepareToPlay (double sampleRate, int maximumExpectedSamplesPerBlock)
 {
     fs = sampleRate;
     numChannels = getNumInputChannels();
@@ -123,15 +177,11 @@ void SafeequaliserAudioProcessor::pluginPreparation (double sampleRate, int samp
             eqFilters.add (new IIRFilter);
         }
         
-        updateFilters (band);
+//        updateFilters (band);
     }
 }
 
-void SafeequaliserAudioProcessor::releaseResources()
-{
-}
-
-void SafeequaliserAudioProcessor::pluginProcessing (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void SafeequaliserAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {    
     int numSamples = buffer.getNumSamples();
     
@@ -146,6 +196,32 @@ void SafeequaliserAudioProcessor::pluginProcessing (AudioSampleBuffer& buffer, M
     }
 }
 
+#ifndef JucePlugin_PreferredChannelConfigurations
+bool SafeequaliserAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+{
+  #if JucePlugin_IsMidiEffect
+    juce::ignoreUnused (layouts);
+    return true;
+  #else
+    // This is the place where you check if the layout is supported.
+    // In this template code we only support mono or stereo.
+    // Some plugin hosts, such as certain GarageBand versions, will only
+    // load plugins that support stereo bus layouts.
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
+     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+
+    // This checks if the input layout matches the output layout
+   #if ! JucePlugin_IsSynth
+    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+        return false;
+   #endif
+
+    return true;
+  #endif
+}
+#endif
+
 //==============================================================================
 bool SafeequaliserAudioProcessor::hasEditor() const
 {
@@ -154,12 +230,12 @@ bool SafeequaliserAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SafeequaliserAudioProcessor::createEditor()
 {
-    return new SafeequaliserAudioProcessorEditor (this);
+    return new SafeequaliserAudioProcessorEditor (*this);
 }
 
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new SafeequaliserAudioProcessor();
+    return new SafeequaliserAudioProcessor ();
 }
