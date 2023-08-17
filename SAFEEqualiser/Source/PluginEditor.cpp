@@ -18,8 +18,8 @@
 using namespace juce;
 
 //==============================================================================
-SafeequaliserAudioProcessorEditor::SafeequaliserAudioProcessorEditor(SafeequaliserAudioProcessor& p)
-    : AudioProcessorEditor (p), audioProcessor (p)
+SafeequaliserAudioProcessorEditor::SafeequaliserAudioProcessorEditor (SafeequaliserAudioProcessor& p, AudioProcessorValueTreeState& apvts)
+    : AudioProcessorEditor (p), audioProcessor (p), vts (apvts)
 {
     setSize (810, 600);
     
@@ -132,7 +132,26 @@ SafeequaliserAudioProcessorEditor::SafeequaliserAudioProcessorEditor(Safeequalis
     freq4Slider.setBounds (col5X, row2Y, 80, 100);
     freq4Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
     freq4Slider.setHelpText ("F");
-    
+
+    // Then in your class constructor or initialization method, add:
+    gain0Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 1 Gain", gain0Slider);
+    freq0Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 1 Frequency", freq0Slider);
+
+    gain1Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 2 Gain", gain1Slider);
+    freq1Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 2 Frequency", freq1Slider);
+    qFactor1Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 2 Q Factor", qFactor1Slider);
+
+    gain2Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 3 Gain", gain2Slider);
+    freq2Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 3 Frequency", freq2Slider);
+    qFactor2Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 3 Q Factor", qFactor2Slider);
+
+    gain3Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 4 Gain", gain3Slider);
+    freq3Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 4 Frequency", freq3Slider);
+    qFactor3Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 4 Q Factor", qFactor3Slider);
+
+    gain4Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 5 Gain", gain4Slider);
+    freq4Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 5 Frequency", freq4Slider);
+
     //// frequncy display
     //addAndMakeVisible (&display);
     //display.setBounds (20, 20, 770, 180);
@@ -232,70 +251,6 @@ void SafeequaliserAudioProcessorEditor::sliderUpdate (Slider* slider)
 
 void SafeequaliserAudioProcessorEditor::filterControlChanged (int controlNum)
 {
-    /*SafeequaliserAudioProcessor* ourProcessor = getProcessor();
-    float freq, gain, qFactor;
-    
-    switch (controlNum)
-    {
-        case 0:
-            freq = display.getControlFrequency (0);
-            gain = display.getControlGain (0);
-            processor.setParameterNotifyingHost (1, freq);
-            processor.setParameterNotifyingHost  (0, gain);
-            display.setFilter (0, 44100, IIRCoefficients::makeLowShelf (44100, freq, 0.71, Decibels::decibelsToGain (gain)));
-            sliders [0]->setValue (gain, dontSendNotification);
-            sliders [1]->setValue (freq, dontSendNotification);
-            break;  
-            
-        case 1:
-            freq = display.getControlFrequency (1);
-            gain = display.getControlGain (1);
-            qFactor = display.getControlQ (1);
-            processor.setParameterNotifyingHost  (3, freq);
-            processor.setParameterNotifyingHost  (2, gain);
-            processor.setParameterNotifyingHost  (4, qFactor);
-            display.setFilter (1, 44100, IIRCoefficients::makePeakFilter (44100, freq, qFactor, Decibels::decibelsToGain (gain)));
-            sliders [2]->setValue (gain, dontSendNotification);
-            sliders [3]->setValue (freq, dontSendNotification);
-            sliders [4]->setValue (qFactor, dontSendNotification);
-            break; 
-            
-        case 2:
-            freq = display.getControlFrequency (2);
-            gain = display.getControlGain (2);
-            qFactor = display.getControlQ (2);
-            processor.setParameterNotifyingHost  (6, freq);
-            processor.setParameterNotifyingHost  (5, gain);
-            processor.setParameterNotifyingHost  (7, qFactor);
-            display.setFilter (2, 44100, IIRCoefficients::makePeakFilter (44100, freq, qFactor, Decibels::decibelsToGain (gain)));
-            sliders [5]->setValue (gain, dontSendNotification);
-            sliders [6]->setValue (freq, dontSendNotification);
-            sliders [7]->setValue (qFactor, dontSendNotification);
-            break; 
-            
-        case 3:
-            freq = display.getControlFrequency (3);
-            gain = display.getControlGain (3);
-            qFactor = display.getControlQ (3);
-            processor.setParameterNotifyingHost  (9, freq);
-            processor.setParameterNotifyingHost  (8, gain);
-            processor.setParameterNotifyingHost  (10, qFactor);
-            display.setFilter (3, 44100, IIRCoefficients::makePeakFilter (44100, freq, qFactor, Decibels::decibelsToGain (gain)));
-            sliders [8]->setValue (gain, dontSendNotification);
-            sliders [9]->setValue (freq, dontSendNotification);
-            sliders [10]->setValue (qFactor, dontSendNotification);
-            break; 
-            
-        case 4:
-            freq = display.getControlFrequency (4);
-            gain = display.getControlGain (4);
-            processor.setParameterNotifyingHost (12, freq);
-            processor.setParameterNotifyingHost  (11, gain);
-            display.setFilter (4, 44100, IIRCoefficients::makeHighShelf (44100, freq, 0.71, Decibels::decibelsToGain (gain)));
-            sliders [11]->setValue (gain, dontSendNotification);
-            sliders [12]->setValue (freq, dontSendNotification);
-            break; 
-    }*/
 }
 
 void SafeequaliserAudioProcessorEditor::updateUI()
@@ -329,29 +284,4 @@ void SafeequaliserAudioProcessorEditor::updateUI()
     freq = processor.getParameter (12);
     display.setFilter (4, 44100, IIRCoefficients::makeHighShelf (44100, freq, 0.71, Decibels::decibelsToGain (gain)));
     display.setControlParameters (4, freq, gain, 1);*/
-    
-    //if (sliders [0]->isMouseOverOrDraggingSlider() || sliders [1]->isMouseOverOrDraggingSlider())
-    //{
-    //    display.paintSingleFilter (0);
-    //}
-    //else if (sliders [2]->isMouseOverOrDraggingSlider() || sliders [3]->isMouseOverOrDraggingSlider() || sliders [4]->isMouseOverOrDraggingSlider())
-    //{
-    //    display.paintSingleFilter (1);
-    //}
-    //else if (sliders [5]->isMouseOverOrDraggingSlider() || sliders [6]->isMouseOverOrDraggingSlider() || sliders [7]->isMouseOverOrDraggingSlider())
-    //{
-    //    display.paintSingleFilter (2);
-    //}
-    //else if (sliders [8]->isMouseOverOrDraggingSlider() || sliders [9]->isMouseOverOrDraggingSlider() || sliders [10]->isMouseOverOrDraggingSlider())
-    //{
-    //    display.paintSingleFilter (3);
-    //}
-    //else if (sliders [11]->isMouseOverOrDraggingSlider() || sliders [12]->isMouseOverOrDraggingSlider())
-    //{
-    //    display.paintSingleFilter (4);
-    //}
-    //else
-    //{
-    //    display.hideSingleFilter();
-    //}
 }

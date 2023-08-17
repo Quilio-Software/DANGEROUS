@@ -22,7 +22,7 @@ using namespace juce;
 class SafeequaliserAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    SafeequaliserAudioProcessorEditor (SafeequaliserAudioProcessor& ownerFilter);
+    SafeequaliserAudioProcessorEditor (SafeequaliserAudioProcessor& ownerFilter, juce::AudioProcessorValueTreeState& state);
     ~SafeequaliserAudioProcessorEditor();
 
     //==============================================================================
@@ -69,6 +69,30 @@ private:
     Image backgroundImage;
     
 //    FilterGraph display;
+
+// Declare these in your header file or class definition:
+
+
+    juce::AudioProcessorValueTreeState& vts;
+
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain0Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq0Attachment;
+
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain1Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq1Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> qFactor1Attachment;
+
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain2Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq2Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> qFactor2Attachment;
+
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain3Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq3Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> qFactor3Attachment;
+
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain4Attachment;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq4Attachment;
+
 };
 
 

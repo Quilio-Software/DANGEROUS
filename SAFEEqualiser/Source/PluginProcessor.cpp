@@ -22,7 +22,7 @@ SafeequaliserAudioProcessor::SafeequaliserAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), apvts (*this, &um, "Parameters", createParameterLayout())
 #endif
 {
     numFilters = 5;
@@ -33,25 +33,6 @@ SafeequaliserAudioProcessor::SafeequaliserAudioProcessor()
     float frequencySkewFactor = 0.25;
     float qSkewFactor = 0.5;
     
-    //addDBParameter ("Band 1 Gain", gains [0], 0.0f, -12.0f, 12.0f, "dB");
-    //addParameter ("Band 1 Frequency", freqs [0], 150.0f, 22.0f, 1000.0f, "Hz", frequencySkewFactor);
-    //qFactors [0] = 0.71f;
-    //
-    //addDBParameter ("Band 2 Gain", gains [1], 0.0f, -12.0f, 12.0f, "dB");
-    //addParameter ("Band 2 Frequency", freqs [1], 560.0f, 82.0f, 3900.0f, "Hz", frequencySkewFactor);
-    //addParameter ("Band 2 Q Factor", qFactors [1], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);
-    //
-    //addDBParameter ("Band 3 Gain", gains [2], 0.0f, -12.0f, 12.0f, "dB");
-    //addParameter ("Band 3 Frequency", freqs [2], 1000.0f, 180.0f, 4700.0f, "Hz", frequencySkewFactor);
-    //addParameter ("Band 3 Q Factor", qFactors [2], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);    
-    //
-    //addDBParameter ("Band 4 Gain", gains [3], 0.0f, -12.0f, 12.0f, "dB");
-    //addParameter ("Band 4 Frequency", freqs [3], 3300.0f, 220.0f, 10000.0f, "Hz", frequencySkewFactor);
-    //addParameter ("Band 4 Q Factor", qFactors [3], 0.71f, 0.1f, 10.0f, String::empty, qSkewFactor);
-    //
-    //addDBParameter ("Band 5 Gain", gains [4], 0.0f, -12.0f, 12.0f, "dB");
-    //addParameter ("Band 5 Frequency", freqs [4], 8200.0f, 580.0f, 20000.0f, "Hz", frequencySkewFactor);
-    //qFactors [4] = 0.71f;
         
     fs = 44100;
     
@@ -230,7 +211,7 @@ bool SafeequaliserAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SafeequaliserAudioProcessor::createEditor()
 {
-    return new SafeequaliserAudioProcessorEditor (*this);
+    return new SafeequaliserAudioProcessorEditor (*this, apvts);
 }
 
 //==============================================================================
