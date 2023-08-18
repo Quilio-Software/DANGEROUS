@@ -22,15 +22,6 @@ SafeequaliserAudioProcessorEditor::SafeequaliserAudioProcessorEditor (Safeequali
     : AudioProcessorEditor (p), audioProcessor (p), vts (apvts)
 {
     setSize (810, 600);
-    
- //   File imageDirectory (IMAGE_DIRECTORY);
-
-//    File backgroundFile = imageDirectory.getChildFile ("Images/EQ_background2.png");
-//    backgroundImage = ImageCache::getFromFile (backgroundFile);
-
-
-
-    
     int filterGraphVerticalOffset = 201;
     int col1X = 30;
     int col2X = 140;
@@ -42,115 +33,12 @@ SafeequaliserAudioProcessorEditor::SafeequaliserAudioProcessorEditor (Safeequali
     int row2Y = 182 + filterGraphVerticalOffset;
     int row3Y = 285 + filterGraphVerticalOffset;
 
-    
-    //addAndMakeVisible (&recordButton);
-    //recordButton.setBounds (580, 358 + filterGraphVerticalOffset, 100, 22);
-    //
-    //addAndMakeVisible (&loadButton);
-    //loadButton.setBounds (690, 358 + filterGraphVerticalOffset, 100, 22);
-    //
-    //addAndMakeVisible (&descriptorBox);
-    //descriptorBox.setBounds (580, 254 + filterGraphVerticalOffset, 210, 94);
-    //
-    //addAndMakeVisible (&metaDataButton);
-    //metaDataButton.setBounds (721, 214 + filterGraphVerticalOffset, 30, 30);
-    //
-    //addAndMakeVisible (&infoButton);
-    //infoButton.setBounds (680, 214 + filterGraphVerticalOffset,	 30, 30);
-    //
-    //addAndMakeVisible (&fileAccessButton);
-    //fileAccessButton.setBounds (760, 214 + filterGraphVerticalOffset, 30, 30);
-    //
-    //setExtraScreenPosition (210, 251);
-    
-    // first band
-    addAndMakeVisible (gain0Slider);
-    gain0Slider.setBounds (col1X, row1Y, 80, 100);
-    gain0Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    gain0Slider.setHelpText ("G");
-    
-    addAndMakeVisible (freq0Slider);
-    freq0Slider.setBounds (col1X, row2Y, 80, 100);
-    freq0Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    freq0Slider.setHelpText ("F");
-    
-    // second band
-    addAndMakeVisible (gain1Slider);
-    gain1Slider.setBounds (col2X, row1Y, 80, 100);
-    gain1Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    gain1Slider.setHelpText ("G");
-    
-    addAndMakeVisible (freq1Slider);
-    freq1Slider.setBounds (col2X, row2Y, 80, 100);
-    freq1Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    freq1Slider.setHelpText ("F");
-    
-    addAndMakeVisible (qFactor1Slider);
-    qFactor1Slider.setBounds (col2X, row3Y, 80, 100);
-    qFactor1Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    qFactor1Slider.setHelpText ("Q");
-    
-    // third band
-    addAndMakeVisible (gain2Slider);
-    gain2Slider.setBounds (col3X, row1Y, 80, 100);
-    gain2Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    gain2Slider.setHelpText ("G");
-    
-    addAndMakeVisible (freq2Slider);
-    freq2Slider.setBounds (col3X, row2Y, 80, 100);
-    freq2Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    freq2Slider.setHelpText ("F");
-    
-    addAndMakeVisible (qFactor2Slider);
-    qFactor2Slider.setBounds (col3X, row3Y, 80, 100);
-    qFactor2Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    qFactor2Slider.setHelpText ("Q");
+    std::vector<int> cols = { col1X, col2X, col3X, col4X, col5X };
+    std::vector<int> rows = { row1Y, row2Y, row3Y };
+    eqComponent = std::make_unique<EQComponent>(5, vts, cols, rows);
+    eqComponent->setBounds (getBounds());
+    addAndMakeVisible (*eqComponent);
 
-    // fourth band
-    addAndMakeVisible (gain3Slider);
-    gain3Slider.setBounds (col4X, row1Y, 80, 100);
-    gain3Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    gain3Slider.setHelpText ("G");
-    
-    addAndMakeVisible (freq3Slider);
-    freq3Slider.setBounds (col4X, row2Y, 80, 100);
-    freq3Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    freq3Slider.setHelpText ("F");
-    
-    addAndMakeVisible (qFactor3Slider);
-    qFactor3Slider.setBounds (col4X, row3Y, 80, 100);
-    qFactor3Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    qFactor3Slider.setHelpText ("Q");
-    
-    // fifth band
-    addAndMakeVisible (gain4Slider);
-    gain4Slider.setBounds (col5X, row1Y, 80, 100);
-    gain4Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    gain4Slider.setHelpText ("G");
-    
-    addAndMakeVisible (freq4Slider);
-    freq4Slider.setBounds (col5X, row2Y, 80, 100);
-    freq4Slider.setColour (juce::Slider::rotarySliderFillColourId, juce::Colours::green);
-    freq4Slider.setHelpText ("F");
-
-    // Then in your class constructor or initialization method, add:
-    gain0Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 1 Gain", gain0Slider);
-    freq0Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 1 Frequency", freq0Slider);
-
-    gain1Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 2 Gain", gain1Slider);
-    freq1Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 2 Frequency", freq1Slider);
-    qFactor1Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 2 Q Factor", qFactor1Slider);
-
-    gain2Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 3 Gain", gain2Slider);
-    freq2Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 3 Frequency", freq2Slider);
-    qFactor2Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 3 Q Factor", qFactor2Slider);
-
-    gain3Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 4 Gain", gain3Slider);
-    freq3Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 4 Frequency", freq3Slider);
-    qFactor3Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 4 Q Factor", qFactor3Slider);
-
-    gain4Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 5 Gain", gain4Slider);
-    freq4Attachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(vts, "Band 5 Frequency", freq4Slider);
 
     //// frequncy display
     //addAndMakeVisible (&display);
@@ -190,17 +78,13 @@ SafeequaliserAudioProcessorEditor::~SafeequaliserAudioProcessorEditor()
 //==============================================================================
 void SafeequaliserAudioProcessorEditor::paint (Graphics& g)
 {
-    int width = getWidth();
-    int height = getHeight();
-    int imageWidth = backgroundImage.getWidth();
-    int imageHeight = backgroundImage.getHeight();
-    
-    g.drawImage (backgroundImage, 0, 0, width, height, 0, 0, imageWidth, imageHeight);
+    g.fillAll(juce::Colours::lightgreen);
 }
 
 void SafeequaliserAudioProcessorEditor::resized()
 {
-
+    if (eqComponent)
+        eqComponent->setBounds (getLocalBounds());
 }
 
 void SafeequaliserAudioProcessorEditor::sliderUpdate (Slider* slider)

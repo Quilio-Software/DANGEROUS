@@ -19,6 +19,128 @@ using namespace juce;
 //==============================================================================
 /**
 */
+class LabelledSliderWidget : public juce::Component
+{
+    juce::Label label;
+    juce::Slider slider;
+    juce::String labelText;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
+
+    juce::AudioProcessorValueTreeState& valueTreeState;
+
+    int textBoxHeight = 10;
+    int labelHeight = 30;
+
+public:
+    LabelledSliderWidget (juce::String parameterID, juce::String newLabelText, juce::AudioProcessorValueTreeState& vts) : valueTreeState (vts)
+    {
+        labelText = newLabelText;
+
+        addAndMakeVisible (slider);
+        slider.setSliderStyle (juce::Slider::SliderStyle::RotaryVerticalDrag);
+        slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 100, textBoxHeight);
+        slider.setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+        slider.setNumDecimalPlacesToDisplay (1);
+        juce::String suffix = getParameterUnits (vts, parameterID);
+        slider.setTextValueSuffix (suffix);
+        slider.setColour (juce::Slider::textBoxTextColourId, juce::Colours::red);
+
+        addAndMakeVisible (label);
+        label.setText (labelText, juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        label.setColour (juce::Label::textColourId, juce::Colours::red);
+
+        // Create SliderAttachments for all parameters
+        sliderAttachment.reset (new juce::AudioProcessorValueTreeState::SliderAttachment (valueTreeState, parameterID, slider));
+    }
+
+    void setSliderStyle(juce::Slider::SliderStyle sliderStyle)
+    {
+        slider.setSliderStyle (sliderStyle);
+    }
+
+    juce::String getParameterUnits (juce::AudioProcessorValueTreeState& state, juce::String parameterID)
+    {
+        // Get the parameter object from the value tree state
+        auto* param = state.getParameter (parameterID);
+
+        // Get the label text for the parameter
+        auto labelText = param->getLabel();
+
+        // Parse the label text to extract the units
+        auto units = labelText.fromLastOccurrenceOf(" ", false, true);
+
+        // Return the units
+        return units;
+    }
+
+    void paint (juce::Graphics& g) override
+    {
+    }
+
+    void resized() override
+    {
+        slider.setBounds (0, 0, getWidth(), getHeight() - labelHeight - textBoxHeight);
+        label.setBounds (0, slider.getHeight(), getWidth(), labelHeight);
+    }
+};
+
+
+class EQComponent : public juce::Component
+{
+private:
+    int numBands;
+
+    struct Band
+    {
+        std::unique_ptr<LabelledSliderWidget> gainSlider;
+        std::unique_ptr<LabelledSliderWidget> freqSlider;
+        std::unique_ptr<LabelledSliderWidget> qFactorSlider;
+    };
+
+    std::vector<Band> bands;
+    std::vector<int>& colX;
+    std::vector<int>& rowY;
+
+public:
+    EQComponent (const int _numBands, juce::AudioProcessorValueTreeState& vts, std::vector<int>& _colX, std::vector<int>& _rowY) : colX (_colX), rowY (_rowY)
+    {
+        numBands = _numBands;
+        colX = _colX;
+        rowY = _rowY;
+        for (int i = 0; i < numBands; ++i)
+        {
+            bands.push_back (Band());
+
+            bands[i].gainSlider = std::make_unique<LabelledSliderWidget>("Band " + juce::String(i + 1) + " Gain", "G", vts);
+            bands[i].gainSlider->setSliderStyle (Slider::SliderStyle::LinearVertical);
+            addAndMakeVisible(*bands[i].gainSlider);
+
+            bands[i].freqSlider = std::make_unique<LabelledSliderWidget>("Band " + juce::String(i + 1) + " Frequency", "F", vts);
+            addAndMakeVisible(*bands[i].freqSlider);
+
+            bands[i].qFactorSlider = std::make_unique<LabelledSliderWidget>("Band " + juce::String(i + 1) + " Q Factor", "Q", vts);
+            addAndMakeVisible(*bands[i].qFactorSlider);
+        }
+    }
+
+    void resized() override
+    {
+        for (int i = 0; i < numBands; ++i)
+        {
+            bands[i].gainSlider->setBounds(colX[i], rowY[0] - 200, 80, 300);
+            bands[i].freqSlider->setBounds(colX[i], rowY[1], 80, 130);
+
+            bands[i].qFactorSlider->setBounds(colX[i], rowY[2], 80, 130);
+        }
+    }
+
+    void paint(juce::Graphics& g) override
+    {
+
+    }
+};
+
 class SafeequaliserAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
@@ -38,61 +160,18 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+
+    std::unique_ptr<EQComponent> eqComponent;
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     SafeequaliserAudioProcessor& audioProcessor;
 
 private:
-    // Sliders for the first band
-    juce::Slider gain0Slider;
-    juce::Slider freq0Slider;
 
-    // Sliders for the second band
-    juce::Slider gain1Slider;
-    juce::Slider freq1Slider;
-    juce::Slider qFactor1Slider;
 
-    // Sliders for the third band
-    juce::Slider gain2Slider;
-    juce::Slider freq2Slider;
-    juce::Slider qFactor2Slider;
-
-    // Sliders for the fourth band
-    juce::Slider gain3Slider;
-    juce::Slider freq3Slider;
-    juce::Slider qFactor3Slider;
-
-    // Sliders for the fifth band
-    juce::Slider gain4Slider;
-    juce::Slider freq4Slider;
-
-    Image backgroundImage;
     
-//    FilterGraph display;
-
-// Declare these in your header file or class definition:
-
-
     juce::AudioProcessorValueTreeState& vts;
-
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain0Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq0Attachment;
-
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain1Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq1Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> qFactor1Attachment;
-
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain2Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq2Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> qFactor2Attachment;
-
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain3Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq3Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> qFactor3Attachment;
-
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gain4Attachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> freq4Attachment;
-
 };
 
 

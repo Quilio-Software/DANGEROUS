@@ -139,6 +139,55 @@ void SafeequaliserAudioProcessor::updateFilters (int band)
     }
 }
 
+AudioProcessorValueTreeState::ParameterLayout SafeequaliserAudioProcessor::createParameterLayout ()
+{
+    float frequencySkewFactor = 1.0f;
+    float qSkewFactor = 1.0f;
+
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    const float minFreq = 20.0f; // starting frequency
+    const float maxFreq = 20000.0f; // ending frequency
+
+    // Calculate the ratio for the geometric progression
+    float ratio = powf(maxFreq / minFreq, 1.0f / (numBands - 1));
+
+    for (int i = 0; i < numBands; ++i)
+    {
+        String bandNumber = String(i + 1);
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
+            "Band " + bandNumber + " Gain",                // parameterID
+            "Band " + bandNumber + " Gain",                // parameter name
+            NormalisableRange<float>(-12.0f, 12.0f),       // range
+            0.0f                                           // default value
+        ));
+
+        DBG ("Initializing Parameter: Band " + bandNumber + " Gain");
+
+        float defaultFreq = minFreq * powf(ratio, i);
+        float nextFreq = (i < numBands - 1) ? minFreq * powf(ratio, i + 1) : maxFreq;
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
+            "Band " + bandNumber + " Frequency",                // parameterID
+            "Band " + bandNumber + " Frequency",                // parameter name
+            NormalisableRange<float>(defaultFreq, nextFreq, 1.0f, frequencySkewFactor),
+            defaultFreq
+        ));
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
+            "Band " + bandNumber + " Q Factor",                 // parameterID
+            "Band " + bandNumber + " Q Factor",                 // parameter name
+            NormalisableRange<float>(0.1f, 10.0f, 0.1f, qSkewFactor),
+            0.71f
+        ));
+    }
+
+    return { params.begin(), params.end() };
+}
+
+
+
 //==============================================================================
 
 void SafeequaliserAudioProcessor::releaseResources()
