@@ -18,7 +18,7 @@
 //==============================================================================
 /**
 */
-class SafeequaliserAudioProcessor  : public juce::AudioProcessor
+class SafeequaliserAudioProcessor  : public juce::AudioProcessor, public AudioProcessorValueTreeState::Listener
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
@@ -64,16 +64,17 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override {}
     void setStateInformation(const void* data, int sizeInBytes) override {}
 
-    int numBands = 5;
+    int numFilters = 5;
 
     AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
+    void parameterChanged (const String& parameterID, float newValue) override;
 
 
     AudioProcessorValueTreeState apvts;
     UndoManager um;
     
 private:
-    int numFilters;
     double fs;
     
     HeapBlock <float> gains;

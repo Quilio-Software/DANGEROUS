@@ -25,22 +25,53 @@ SafeequaliserAudioProcessor::SafeequaliserAudioProcessor()
                        ), apvts (*this, &um, "Parameters", createParameterLayout())
 #endif
 {
-    numFilters = 5;
-    gains.allocate (numFilters, true);
-    freqs.allocate (numFilters, true);
-    qFactors.allocate (numFilters, true);
-    
+    gains.allocate (numFilters, false);
+    freqs.allocate (numFilters, false);
+    qFactors.allocate (numFilters, false);
+
+
+    for (int i = 0; i < numFilters; ++i)
+    {
+
+
+        apvts.addParameterListener ("Band " + String(i + 1) + " Gain", this);
+        apvts.addParameterListener ("Band " + String(i + 1) + " Frequency", this);
+        apvts.addParameterListener ("Band " + String(i + 1) + " Q Factor", this);
+
+        float gain = float (apvts.getParameterAsValue ("Band " + String(i + 1) + " Gain").getValue());
+        float freq = float (apvts.getParameterAsValue ("Band " + String(i + 1) + " Frequency").getValue());
+        float qFactor = float (apvts.getParameterAsValue ("Band " + String(i + 1) + " Q Factor").getValue());
+
+        DBG ("GAIN" + juce::String (i) + " is " + juce::String (gain));
+        DBG ("FREQ" + juce::String (i) + " is " + juce::String (freq));
+        DBG ("Q FACTOR" + juce::String (i) + " is " + juce::String (qFactor));
+
+        gains[i] = gain;
+        freqs[i] = freq;
+        qFactors[i] = qFactor;
+    }
+
+    fs = 44100;
+    prepareToPlay (44100, 512);
+
+
     float frequencySkewFactor = 0.25;
     float qSkewFactor = 0.5;
     
         
-    fs = 44100;
+
     
     numChannels = 0;
 }
 
 SafeequaliserAudioProcessor::~SafeequaliserAudioProcessor()
 {
+    for (int i = 0; i < numFilters; ++i)
+    {
+        apvts.removeParameterListener("Band " + String(i + 1) + " Gain", this);
+        apvts.removeParameterListener("Band " + String(i + 1) + " Frequency", this);
+        apvts.removeParameterListener("Band " + String(i + 1) + " Q Factor", this);
+    }
 }
 
 //==============================================================================
@@ -116,21 +147,21 @@ void SafeequaliserAudioProcessor::updateFilters (int band)
 		filterCoefficients = IIRCoefficients::makeLowShelf(fs,
                                                            freqs [0],
                                                            qFactors [0],
-                                                           gains [0]);
+                                                           juce::Decibels::decibelsToGain (gains [0]));
 	}
 	else if (band == numFilters - 1) // Highest band (high shelf)
 	{
 		filterCoefficients = IIRCoefficients::makeHighShelf(fs,
                                                             freqs [numFilters - 1],
                                                             qFactors [numFilters - 1],
-                                                            gains [numFilters - 1]);
+                                                            juce::Decibels::decibelsToGain (gains [numFilters - 1]));
 	}
 	else // Other bands (peaking filter)
 	{
 		filterCoefficients = IIRCoefficients::makePeakFilter(fs,
                                                              freqs [band],
                                                              qFactors [band],
-                                                             gains [band]);
+                                                             juce::Decibels::decibelsToGain (gains [band]));
 	}
 	
 	for (int channel = 0; channel < numChannels; ++channel)
@@ -139,43 +170,63 @@ void SafeequaliserAudioProcessor::updateFilters (int band)
     }
 }
 
+void SafeequaliserAudioProcessor::parameterChanged (const String& parameterID, float newValue)
+{
+    for (int i = 0; i < numFilters; ++i)
+    {
+        if (parameterID == "Band " + String(i + 1) + " Gain")
+        {
+            gains[i] = newValue;
+            updateFilters (i);
+        }
+        else if (parameterID == "Band " + String(i + 1) + " Frequency")
+        {
+            freqs[i] = newValue;
+            updateFilters (i);
+        }
+        else if (parameterID == "Band " + String(i + 1) + " Q Factor")
+        {
+            qFactors[i] = newValue;
+            updateFilters (i);
+        }
+    }
+}
+
 AudioProcessorValueTreeState::ParameterLayout SafeequaliserAudioProcessor::createParameterLayout ()
 {
     float frequencySkewFactor = 1.0f;
     float qSkewFactor = 1.0f;
 
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    juce::AudioProcessorValueTreeState::ParameterLayout params;
 
     const float minFreq = 20.0f; // starting frequency
     const float maxFreq = 20000.0f; // ending frequency
 
     // Calculate the ratio for the geometric progression
-    float ratio = powf(maxFreq / minFreq, 1.0f / (numBands - 1));
+    float ratio = powf (maxFreq / minFreq, 1.0f / (numFilters - 1));
 
-    for (int i = 0; i < numBands; ++i)
+    for (int i = 0; i < numFilters; ++i)
     {
         String bandNumber = String(i + 1);
 
-        params.push_back(std::make_unique<AudioParameterFloat>(
+        params.add (std::make_unique<AudioParameterFloat>(
             "Band " + bandNumber + " Gain",                // parameterID
             "Band " + bandNumber + " Gain",                // parameter name
             NormalisableRange<float>(-12.0f, 12.0f),       // range
             0.0f                                           // default value
         ));
 
-        DBG ("Initializing Parameter: Band " + bandNumber + " Gain");
-
         float defaultFreq = minFreq * powf(ratio, i);
-        float nextFreq = (i < numBands - 1) ? minFreq * powf(ratio, i + 1) : maxFreq;
+        float nextFreq = (i < numFilters - 1) ? minFreq * powf(ratio, i + 1) : maxFreq;
 
-        params.push_back(std::make_unique<AudioParameterFloat>(
+        params.add (std::make_unique<AudioParameterFloat>(
             "Band " + bandNumber + " Frequency",                // parameterID
             "Band " + bandNumber + " Frequency",                // parameter name
-            NormalisableRange<float>(defaultFreq, nextFreq, 1.0f, frequencySkewFactor),
+            NormalisableRange<float>(20, 20000),
             defaultFreq
         ));
 
-        params.push_back(std::make_unique<AudioParameterFloat>(
+        params.add (std::make_unique<AudioParameterFloat>(
             "Band " + bandNumber + " Q Factor",                 // parameterID
             "Band " + bandNumber + " Q Factor",                 // parameter name
             NormalisableRange<float>(0.1f, 10.0f, 0.1f, qSkewFactor),
@@ -183,7 +234,7 @@ AudioProcessorValueTreeState::ParameterLayout SafeequaliserAudioProcessor::creat
         ));
     }
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 
@@ -207,7 +258,7 @@ void SafeequaliserAudioProcessor::prepareToPlay (double sampleRate, int maximumE
             eqFilters.add (new IIRFilter);
         }
         
-//        updateFilters (band);
+        updateFilters (band);
     }
 }
 

@@ -130,7 +130,6 @@ public:
         {
             bands[i].gainSlider->setBounds(colX[i], rowY[0] - 200, 80, 300);
             bands[i].freqSlider->setBounds(colX[i], rowY[1], 80, 130);
-
             bands[i].qFactorSlider->setBounds(colX[i], rowY[2], 80, 130);
         }
     }
