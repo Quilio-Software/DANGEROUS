@@ -24,3 +24,5 @@ https://github.com/jamiebullock/LibXtract
 
 The JUCE LV2 wrapper is part of DISTRHO.
 https://github.com/DISTRHO/DISTRHO
+
+Maintained and updated by yours truly -> Abhishek Shivakumar @ Quilio Ltd
